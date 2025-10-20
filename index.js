@@ -21,6 +21,7 @@ async function run() {
   try {
     await client.connect();
     const dataCollection = client.db("CoffeeDb").collection("coffees");
+const usersCollection = client.db("CoffeeDb").collection("users");
 
  
     app.post("/coffees", async (req, res) => {
@@ -59,6 +60,18 @@ async function run() {
       const result = await dataCollection.deleteOne(query);
       res.send(result);
     });
+
+    // post user data into database
+    app.post("/users", async (req, res) => {
+  const user = req.body;
+  const existing = await usersCollection.findOne({ email: user.email });
+  if (existing) {
+    return res.send({ message: "User already exists", insertedId: null });
+  }
+  const result = await usersCollection.insertOne(user);
+  res.send(result);
+});
+
 
     await client.db("admin").command({ ping: 1 });
     console.log(
